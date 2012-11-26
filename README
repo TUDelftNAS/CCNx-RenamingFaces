@@ -1,0 +1,63 @@
+Renaming Faces for CCNx
+
+Copyright (C) 2012, Delft University of Technology, Faculty of Electrical Engineering, Mathematics and Computer Science, Network Architectures and Services, Niels van Adrichem
+
+    This file is part of ``Renaming Faces for CCNx''.
+
+    ``Renaming Faces for CCNx'' is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License version 3 as published by
+    the Free Software Foundation.
+
+    ``Renaming Faces for CCNx'' is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with ``Renaming Faces for CCNx''.  If not, see <http://www.gnu.org/licenses/>.
+
+``Renaming Faces for CCNx'' is a software package that dynamically configures clients using CCNx, and clients connected recursively to them (as in, not directly connected to a main server).
+Routing end-points are found in order to access data, but also dynamic generated names are created to enable global sharing of information.
+
+If you have any questions or are experiencing any troubles while using this program, please contact Niels van Adrichem at n.l.m.vanadrichem _AT_ tudelft _DOT_ nl (replace the _AT_  and _DOT_ accordingly).
+
+1. Prerequisites
+2. Building
+3. Configuration and Usage
+4. Future work
+5. Contributors
+
+1. Prerequisites
+- This software has been build and tested using the CCNx architecture version 0.6.2., first of all make sure you have a working installation of version 0.6.2.
+- Make sure you have a properly configure JDK and JRE to compile and run the program, for example I use the Sun JRE and JDK 1.7.
+  
+2. Building
+	Download the source of ``Renaming Faces for CCNx'' and place it in a folder of your preference (I use /home/username/tools/CCNx-RenamingFaces, from here on I assume you have a console open in this directory).
+	The compilation and running of ``Renaming Faces for CCNx'' depend on a few jar-files carried along with CCNx-0.6.2 which should be in the folder lib.
+	You can either:
+		1) Extract the folder from this repository if you use CCNx 0.6.2.
+		2)	create the folder lib (mkdir lib)
+			copy the files ccn.jar and bcprov-jdk16-143.jar from $CCNX_HOME/lib (cp $CCNX_HOME/lib/ccn.jar $CCNX_HOME/lib/bcprov-jdk16-143.jar lib)
+		3) create a symlink to your $CCNX_HOME/lib folder (in case you frequently patch your CCNx) (ln -s $CCNX_HOME/lib lib)
+
+	Run tools/compile.sh to build the source.
+	A folder named bin holding the class-files is created automatically
+
+3. Configuration and Usage
+	The application knows no configuration options.
+	Mappings can be inserted into an already running CCNx daemon by using the following parameters on the class ``Rename'':
+		"in" or "out"; to define whether you need to rename incoming, or outgoing Interests and the respective contentObjects.
+        [<user-registered name>]; the user-registered name (to be) appended to the routeable name (in case of outgoing Interests).
+        <routable name>; the globally routeable name to which Interest are, or will be, sent to (applies to both in- and outgoing Interests).
+	
+	The files tools/rename-outgoing and tools/rename-incoming contain examples of an outgoing and incoming node that rename the context-related name ccnx:/NielsvanAdrichem.eu to the routeable name ccnx:/tudelft.nl/ewi/nas/niels.
+	Given that routing from node A to B is possible using the routable name ccnx:/tudelft/ewi/nas/niels, an application on node B using the name ccnx:/NielsvanAdrichem.eu can be contacted using that name by running the file tools/rename-outgoing on node A and tools/rename-incoming on node B.
+		
+4. Future work
+	Although the proto-type works fine for a first attempt, there are a number of greater and smaller challenges to be taken:
+	- We need to detect ``unroutable'' Interests and automatically create Renaming Faces for those, meaning that we need to catch those Interests by applying a low-prio default prefix rule (ccnx:/) and look up possible routeable names for those Interests by using DNS.
+	- Mappings need to time to out regularly, in order to allow changes in mappings to be refreshed.
+	
+5. Contributors  
+	Implementation and Testing: Ir. Niels L.M. van Adrichem (Delft University of Technology)
+	Advising: Special thanks go to Dr. ir. Fernando Kuipers (Delft University of Technology) 
