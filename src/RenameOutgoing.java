@@ -22,7 +22,7 @@ import org.ccnx.ccn.CCNContentHandler;
 import org.ccnx.ccn.CCNHandle;
 import org.ccnx.ccn.CCNInterestHandler;
 import org.ccnx.ccn.config.ConfigurationException;
-import org.ccnx.ccn.impl.security.keys.BasicKeyManager;
+import org.ccnx.ccn.config.SystemConfiguration;
 import org.ccnx.ccn.io.content.ContentDecodingException;
 import org.ccnx.ccn.protocol.ContentName;
 import org.ccnx.ccn.protocol.ContentObject;
@@ -37,7 +37,7 @@ public class RenameOutgoing implements CCNInterestHandler, CCNContentHandler{
 	private CCNHandle outgoingCCNHandle;
 	
 	private ContentName _nameA, _nameB;
-	private BasicKeyManager bkm;
+	//private BasicKeyManager bkm;
 	
 	public RenameOutgoing(ContentName tNameA, ContentName tNameB) throws ConfigurationException, IOException {
 		incomingCCNHandle = CCNHandle.open();
@@ -49,9 +49,16 @@ public class RenameOutgoing implements CCNInterestHandler, CCNContentHandler{
 		incomingCCNHandle.registerFilter(_nameA, this);
 		System.out.println("Registered " + _nameA + " to be renamed to " + _nameB);
 		
-		bkm = new BasicKeyManager();
-		bkm.initialize();
-		System.out.println("Connected to BasicKeyManager");		
+		//bkm = new BasicKeyManager();
+		//bkm.initialize();
+		//System.out.println("Connected to BasicKeyManager");		
+	}
+	
+	public void unRegister()
+	{
+		incomingCCNHandle.unregisterFilter(_nameA, this);
+		outgoingCCNHandle.close();
+		incomingCCNHandle.close();
 	}
 
 	@Override
@@ -62,8 +69,14 @@ public class RenameOutgoing implements CCNInterestHandler, CCNContentHandler{
 		
 		System.out.println("Renamed it to: "+intrst.name());
 		try {
-			outgoingCCNHandle.expressInterest(intrst, this);
-			System.out.println("Expressed the renamed Interest.");
+			//outgoingCCNHandle.expressInterest(intrst, this);
+			ContentObject co = outgoingCCNHandle.get(intrst, SystemConfiguration.getDefaultTimeout());
+			if(co != null)
+				incomingCCNHandle.put(renameCO(co) );
+			//System.out.println("Expressed the renamed Interest.");
+		} catch (ContentDecodingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -72,32 +85,33 @@ public class RenameOutgoing implements CCNInterestHandler, CCNContentHandler{
 		return true;
 	}
 
+	private ContentObject renameCO(ContentObject incCO) throws ContentDecodingException
+	{
+		ContentObject outCO = new ContentObject();
+		outCO.decode( incCO.content() );
+		System.out.println("Decapsulated "+outCO.name());
+		return outCO;
+	}
+	
 	@Override
-	public Interest handleContent(ContentObject incCO, Interest intrst) {
+	public Interest handleContent(ContentObject co, Interest intrst) {
 		// TODO Auto-generated method stub
-		try {
-			System.out.println("Received encapsulated ContentObject: "+incCO.name());
-			//WirePacket wp = new WirePacket();
-		
-			//wp.decode(incCO.content());
-			//List<ContentObject> tempList = wp.data();
-			//List<ContentObject> tempList = incCO;
-			//if(tempList.size() == 1)
-			//{
-				ContentObject outCO = new ContentObject();
-				outCO.decode( incCO.content() );
-				System.out.println("Decapsulated "+outCO.name());
-				incomingCCNHandle.put(outCO);
-				System.out.println("Returned the original ContentObject");
-			//}
+	
 			
-		} catch (ContentDecodingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+			try {
+				incomingCCNHandle.put(renameCO(co));
+				System.out.println("Returned the original ContentObject");
+			} catch (ContentDecodingException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+			
+			
+		
 		
 		
 		return null;

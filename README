@@ -16,10 +16,13 @@ Copyright (C) 2012, Delft University of Technology, Faculty of Electrical Engine
     You should have received a copy of the GNU General Public License
     along with ``Renaming Faces for CCNx''.  If not, see <http://www.gnu.org/licenses/>.
 
-``Renaming Faces for CCNx'' is a software package that dynamically configures clients using CCNx, and clients connected recursively to them (as in, not directly connected to a main server).
-Routing end-points are found in order to access data, but also dynamic generated names are created to enable global sharing of information.
+``Renaming Faces for CCNx'' is a software package that renames Interests containing context-related "pretty" names (such as /NielsvanAdrichem.eu for my website), to NDN routeable names (such as /isp.net/routing/domain/end-user/pc1/etc) and forwards them accordingly.
+At the receiving site a Renaming Face executes the opposite and delivers the packet to the application in charge based on its context-related name.
 
-If you have any questions or are experiencing any troubles while using this program, please contact Niels van Adrichem at n.l.m.vanadrichem _AT_ tudelft _DOT_ nl (replace the _AT_  and _DOT_ accordingly).
+It contains a DNS-manager, which catches unforwardable Interests and tries to find mappings for them using DNS TXT-records.
+For example, the domain NielsvanAdrichem.eu contains two TXT-records stating "v=ndn /tudelft.nl/ewi/nas/niels" and "v=ndn /tudelft.nl/ewi/nas/niels-lab" giving two possible routeable names towards the context-related Interests may be forwarded.
+
+If you have any questions or are experiencing any troubles while using this program, please contact Niels van Adrichem at n.l.m.vanadrichem _AT_ tudelft _DOT_ nl (replace the _AT_  and _DOT_ accordingly), I will gladly help you.
 
 1. Prerequisites
 2. Building
@@ -37,15 +40,22 @@ If you have any questions or are experiencing any troubles while using this prog
 	You can either:
 		1) Extract the folder from this repository if you use CCNx 0.6.2.
 		2)	create the folder lib (mkdir lib)
-			copy the files ccn.jar and bcprov-jdk16-143.jar from $CCNX_HOME/lib (cp $CCNX_HOME/lib/ccn.jar $CCNX_HOME/lib/bcprov-jdk16-143.jar lib)
-		3) create a symlink to your $CCNX_HOME/lib folder (in case you frequently patch your CCNx) (ln -s $CCNX_HOME/lib lib)
+			copy the files ccn.jar, bcprov-jdk16-143.jar from $CCNX_HOME/lib (cp $CCNX_HOME/lib/ccn.jar $CCNX_HOME/lib/bcprov-jdk16-143.jar lib)
+		3) create a symlink to your $CCNX_HOME/lib folder (in case you frequently patch your CCNx) (ln -s $CCNX_HOME/lib lib) and 
+		2 and 3b) Download org.xbill.dns_2.1.3.jar from http://www.dnsjava.org and save it in the lib folder.
 
 	Run tools/compile.sh to build the source.
 	A folder named bin holding the class-files is created automatically
 
 3. Configuration and Usage
-	The application knows no configuration options.
-	Mappings can be inserted into an already running CCNx daemon by using the following parameters on the class ``Rename'':
+	The mapping-manager can be started by using the following parameters on the class "Rename":
+		"dns"; indicating that you want to automatically find mappings for unknown destinations.
+		[<dns-server>]; optionally replace your system default DNS server with a server of your own choice.
+	The file tools/rename-manager contains an example of running the manager.
+	Do not forget to run an incoming renaming face (as described below) on the receiving site.
+	Ultimately we would like to integrate this in the CCNx-DHCNGP application, to rename incoming Interests without user interaction.
+	
+	Mappings can be inserted manually into an already running CCNx daemon by using the following parameters on the class ``Rename'':
 		"in" or "out"; to define whether you need to rename incoming, or outgoing Interests and the respective contentObjects.
         [<user-registered name>]; the user-registered name (to be) appended to the routeable name (in case of outgoing Interests).
         <routable name>; the globally routeable name to which Interest are, or will be, sent to (applies to both in- and outgoing Interests).
@@ -54,9 +64,9 @@ If you have any questions or are experiencing any troubles while using this prog
 	Given that routing from node A to B is possible using the routable name ccnx:/tudelft/ewi/nas/niels, an application on node B using the name ccnx:/NielsvanAdrichem.eu can be contacted using that name by running the file tools/rename-outgoing on node A and tools/rename-incoming on node B.
 		
 4. Future work
-	Although the proto-type works fine for a first attempt, there are a number of greater and smaller challenges to be taken:
-	- We need to detect ``unroutable'' Interests and automatically create Renaming Faces for those, meaning that we need to catch those Interests by applying a low-prio default prefix rule (ccnx:/) and look up possible routeable names for those Interests by using DNS.
-	- Mappings need to time to out regularly, in order to allow changes in mappings to be refreshed.
+	- Mappings time out regularly (every 5 minutes), to prevent the system from overloading with unused mappings.
+	This garantuees that mappings are refreshed on a regular basis as a new mapping will be requested as soon as a next packet to the timed-out destination arrive.
+	It may be more correct to only remove mappings that have not been used for a period of e.g. 5 minutes or longer, and refresh mappings to destinations without prior removal.
 	
 5. Contributors  
 	Implementation and Testing: Ir. Niels L.M. van Adrichem (Delft University of Technology)

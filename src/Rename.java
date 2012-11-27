@@ -22,6 +22,7 @@ import java.io.IOException;
 import org.ccnx.ccn.config.ConfigurationException;
 import org.ccnx.ccn.protocol.ContentName;
 import org.ccnx.ccn.protocol.MalformedContentNameStringException;
+import org.xbill.DNS.SimpleResolver;
 
 public class Rename {
 
@@ -41,12 +42,17 @@ public class Rename {
 	public static void main(String[] args) {
 		ContentName nameA, nameB;
 		// TODO Auto-generated method stub
-		if(args.length < 2 || args.length > 3)
+		if(args.length < 1 || args.length > 3)
 		{
 			StartMessage();	
 		}
 		
-		if(!(args[0].equals("in")||args[0].equals("out")))
+		if(!(args[0].equals("dns")||args[0].equals("in")||args[0].equals("out")))
+		{
+			StartMessage();
+		}
+		
+		if(args[0].equals("dns") && args.length != 1 && args.length !=2)
 		{
 			StartMessage();
 		}
@@ -61,19 +67,34 @@ public class Rename {
 			StartMessage();
 		}
 		
+		
+		
 		try {
-			nameA = ContentName.fromURI(args[1]);
-					
-					
+							
 			//System.out.println("Good boy, right parameters");
+			if(args[0].equals("dns"))
+			{
+				System.out.println("Let's manage all your mappings using DNS");
+				if(args.length == 1)
+				{
+					new RenameManager();
+				}
+				if(args.length == 2)
+				{
+					SimpleResolver rslvr = new SimpleResolver(args[1]);
+					new RenameManager(rslvr);
+				}
+			}
 			
 			if(args[0].equals("out"))
 			{
+				nameA = ContentName.fromURI(args[1]);
 				nameB = ContentName.fromURI(args[2]);
 				new RenameOutgoing(nameA, nameB);
 			}
 			if(args[0].equals("in"))
 			{
+				nameA = ContentName.fromURI(args[1]);
 				new RenameIncoming(nameA);
 			}
 			
