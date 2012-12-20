@@ -62,7 +62,10 @@ If you have any questions or are experiencing any troubles while using this prog
 	
 	The files tools/rename-outgoing and tools/rename-incoming contain examples of an outgoing and incoming node that rename the context-related name ccnx:/NielsvanAdrichem.eu to the routeable name ccnx:/tudelft.nl/ewi/nas/niels.
 	Given that routing from node A to B is possible using the routable name ccnx:/tudelft/ewi/nas/niels, an application on node B using the name ccnx:/NielsvanAdrichem.eu can be contacted using that name by running the file tools/rename-outgoing on node A and tools/rename-incoming on node B.
-		
+
+	Additionally you can use renaming without encapsulating ContentObjects into new ContentObjects, and thus temporarily invalidate their signatures, by using "in_nosig" and "out_nosig" instead of "in" and "out" as parameters.
+	It is also possible to use the scripts tools/rename-outgoing-nosig and tools/rename-incoming-nosig.
+	
 4. Future work
 	- Mappings time out regularly (every 5 minutes), to prevent the system from overloading with unused mappings.
 	This garantuees that mappings are refreshed on a regular basis as a new mapping will be requested as soon as a next packet to the timed-out destination arrive.
