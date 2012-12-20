@@ -24,13 +24,14 @@ import org.ccnx.ccn.CCNInterestHandler;
 import org.ccnx.ccn.config.ConfigurationException;
 import org.ccnx.ccn.config.SystemConfiguration;
 import org.ccnx.ccn.io.content.ContentDecodingException;
+import org.ccnx.ccn.io.content.ContentEncodingException;
 import org.ccnx.ccn.protocol.ContentName;
 import org.ccnx.ccn.protocol.ContentObject;
 import org.ccnx.ccn.protocol.Interest;
 
 
 
-public class RenameOutgoing implements CCNInterestHandler, CCNContentHandler{
+public class RenameOutgoing_NoSig implements CCNInterestHandler, CCNContentHandler{
 
 	
 	private CCNHandle incomingCCNHandle;
@@ -39,7 +40,7 @@ public class RenameOutgoing implements CCNInterestHandler, CCNContentHandler{
 	private ContentName _nameA, _nameB;
 	//private BasicKeyManager bkm;
 	
-	public RenameOutgoing(ContentName tNameA, ContentName tNameB) throws ConfigurationException, IOException {
+	public RenameOutgoing_NoSig(ContentName tNameA, ContentName tNameB) throws ConfigurationException, IOException {
 		incomingCCNHandle = CCNHandle.open();
 		outgoingCCNHandle = CCNHandle.open();
 		
@@ -85,12 +86,16 @@ public class RenameOutgoing implements CCNInterestHandler, CCNContentHandler{
 		return true;
 	}
 
-	private ContentObject renameCO(ContentObject incCO) throws ContentDecodingException
+	private ContentObject renameCO(ContentObject incCO) throws ContentDecodingException, ContentEncodingException
 	{
-		ContentObject outCO = new ContentObject();
-		outCO.decode( incCO.content() );
-		//System.out.println("Decapsulated "+outCO.name());
-		return outCO;
+		//System.out.println("Received original ContentObject: "+incCO.name());
+
+		ContentName cn  = incCO.name();
+		cn.decode( cn.postfix(_nameB).encode() );
+		
+		//System.out.println("Renamed it in: "+incCO.name());
+		
+		return incCO;
 	}
 	
 	@Override

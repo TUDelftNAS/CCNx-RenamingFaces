@@ -47,7 +47,7 @@ public class Rename {
 			StartMessage();	
 		}
 		
-		if(!(args[0].equals("dns")||args[0].equals("in")||args[0].equals("out")))
+		if(!(args[0].equals("dns")||args[0].equals("in")||args[0].equals("out")||args[0].equals("in_nosig")||args[0].equals("out_nosig")))
 		{
 			StartMessage();
 		}
@@ -63,6 +63,16 @@ public class Rename {
 		}
 		
 		if(args[0].equals("out") && args.length != 3)
+		{
+			StartMessage();
+		}
+		
+		if(args[0].equals("in_nosig") && args.length != 2)
+		{
+			StartMessage();
+		}
+		
+		if(args[0].equals("out_nosig") && args.length != 3)
 		{
 			StartMessage();
 		}
@@ -96,6 +106,17 @@ public class Rename {
 			{
 				nameA = ContentName.fromURI(args[1]);
 				new RenameIncoming(nameA);
+			}
+			if(args[0].equals("out_nosig"))
+			{
+				nameA = ContentName.fromURI(args[1]);
+				nameB = ContentName.fromURI(args[2]);
+				new RenameOutgoing_NoSig(nameA, nameB);
+			}
+			if(args[0].equals("in_nosig"))
+			{
+				nameA = ContentName.fromURI(args[1]);
+				new RenameIncoming_NoSig(nameA);
 			}
 			
 		} catch (MalformedContentNameStringException e) {

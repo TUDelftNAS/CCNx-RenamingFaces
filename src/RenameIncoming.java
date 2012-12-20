@@ -62,10 +62,10 @@ public class RenameIncoming implements CCNInterestHandler, CCNContentHandler {
 
 	@Override
 	public boolean handleInterest(Interest intrst) {
-		System.out.println("Received renamed Interest: " + intrst.name());
+		//System.out.println("Received renamed Interest: " + intrst.name());
 		//intrst.name(new ContentName(_name.count(), intrst.name().count(), intrst.name().components()) );
 		intrst.name(intrst.name().postfix(_name));
-		System.out.println("Renamed it back to: "+intrst.name());
+		//System.out.println("Renamed it back to: "+intrst.name());
 	
 		try {
 			//outgoingCCNHandle.expressInterest(intrst, this);
@@ -91,15 +91,15 @@ public class RenameIncoming implements CCNInterestHandler, CCNContentHandler {
 
 	private ContentObject renameCO(ContentObject incCO) throws InvalidKeyException, SignatureException, ContentEncodingException
 	{
-		System.out.println("Received original ContentObject: "+incCO.name());
+		//System.out.println("Received original ContentObject: "+incCO.name());
 		
 		KeyManager bkm = CCNHandle.getHandle().keyManager();
 		SignedInfo si = new SignedInfo(bkm.getDefaultKeyID(), CCNTime.now(), ContentType.DATA, bkm.getDefaultKeyLocator());
 		
-		System.out.println("Genereated ContentObject's signedInfo");
+		//System.out.println("Genereated ContentObject's signedInfo");
 		
 		ContentObject outCO = new ContentObject(_name.append(incCO.name()),si, incCO.encode(), bkm.getDefaultSigningKey());
-		System.out.println("Encapsulated it in: "+outCO.name());
+		//System.out.println("Encapsulated it in: "+outCO.name());
 		
 		return outCO;
 	}
@@ -107,7 +107,7 @@ public class RenameIncoming implements CCNInterestHandler, CCNContentHandler {
 	public Interest handleContent(ContentObject co, Interest intrst) {
 		try {
 			incomingCCNHandle.put(renameCO(co));
-			System.out.println("Returned the encapsulated ContentObject.");
+			//System.out.println("Returned the encapsulated ContentObject.");
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
